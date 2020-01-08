@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      body {
+        background-color: black;
+      }
+
+      #video-player {
+        width: 90%;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+    </style>
+  </head>
+  <body>
+    <video id="video-player" controls>
+      <source id="video-source" type="video/mp4">
+    </video>
+    <script>
+      var TRAILERS = [];
+      var PLAYER = document.getElementById("video-player");
+
+      PLAYER.addEventListener("ended", function() {
+        playRandomTrailer(TRAILERS);
+      });
+
+      function getJSON(url, handler) {
+          var xhr = new XMLHttpRequest();
+          xhr.addEventListener("load", function() {
+              handler(JSON.parse(this.responseText));
+          });
+          xhr.open("GET", url);
+          xhr.send();
+      }
+
+      function playRandomTrailer(trailers) {
+        var trailer = trailers[Math.floor(Math.random() * trailers.length)];
+        var trailerDataURL = "https://trailers.apple.com" + trailer["location"] + "data/page.json";
+        getJSON(trailerDataURL, playTrailer);
+      }
+
+      function playTrailer(trailer) {
+        var trailerClipURL = trailer.clips[0].versions.enus.sizes.sd.srcAlt;
+        var source = document.getElementById("video-source");
+        source.setAttribute("src", trailerClipURL);
+        PLAYER.load();
+        PLAYER.play();
+      }
+
+      getJSON("https://trailers.apple.com/trailers/home/feeds/studios.json", function(trailers) {
+          TRAILERS = trailers;
+          playRandomTrailer(TRAILERS);
+      });
+    </script>
+  </body>
+</html>
